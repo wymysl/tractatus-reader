@@ -4,7 +4,7 @@
 // capped at the frontier). Push failures are logged and never block others.
 
 import { buildPushPayload } from '@block65/webcrypto-web-push';
-import { computeDay, firstLine, todayISO } from './helpers.mjs';
+import { computeDay, firstLine, shouldSend, todayISO } from './helpers.mjs';
 
 const CORS = {
   'access-control-allow-origin': '*',
@@ -65,6 +65,7 @@ export async function pushAll(env) {
       try {
         const rec = JSON.parse(await env.SUBS.get(k.name));
         const day = computeDay(rec.startDate, today, manifest.frontier);
+        if (!shouldSend(rec, day)) continue;
         const unit = await getUnit(day);
         const message = {
           data: JSON.stringify({
@@ -76,6 +77,7 @@ export async function pushAll(env) {
         const res = await fetch(rec.subscription.endpoint, payload);
         if (res.status === 404 || res.status === 410) await env.SUBS.delete(k.name);
         else if (!res.ok) console.error(`push ${res.status} for ${k.name}`);
+        else await env.SUBS.put(k.name, JSON.stringify({ ...rec, lastSentDay: day }));
       } catch (err) {
         console.error('push failed (non-fatal)', k.name, err.message ?? err);
       }

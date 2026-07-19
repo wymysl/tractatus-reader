@@ -13,6 +13,12 @@ export function computeDay(startISO, today, frontier) {
   return Math.max(1, Math.min(n, frontier));
 }
 
+// Silence over repetition: if the frontier hasn't moved since we last rang
+// this subscriber's bell, say nothing today.
+export function shouldSend(rec, day) {
+  return rec.lastSentDay !== day;
+}
+
 export function firstLine(html) {
   const text = html
     .replace(/<p class="footnote">[\s\S]*$/, '')
