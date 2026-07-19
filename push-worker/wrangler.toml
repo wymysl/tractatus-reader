@@ -1,0 +1,14 @@
+name = "tractatus-push"
+main = "src/index.mjs"
+compatibility_date = "2026-07-01"
+
+kv_namespaces = [
+  { binding = "SUBS", id = "REPLACE_AFTER_wrangler_kv_namespace_create_SUBS" }
+]
+
+[triggers]
+crons = ["0 6 * * *"]
+
+[vars]
+SITE_URL = "https://tractatus-daily.pages.dev"
+VAPID_SUBJECT = "mailto:kuropatwinsky@gmail.com"
