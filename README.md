@@ -38,5 +38,5 @@ a tap away. Authored day by day — and self-revised — by a scheduled agent;
 ## Provenance
 
 Source text: Project Gutenberg ebook #5740 (`data/5740-t.tex`), parsed by
-`scripts/parse.mjs` into `data/tractatus.json` (526 statements). Immutable
+`scripts/parse.mjs` into `data/tractatus.json` (526 statements). The preface (both languages) is extracted by `scripts/extract-preface.mjs` into `data/preface.json`. Immutable
 by charter: `data/tractatus.json`, `journal/**`.
