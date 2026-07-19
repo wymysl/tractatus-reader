@@ -7,8 +7,10 @@ subject only to the guardrails below.
 
 ## The daily routine
 
-1. **Idempotency check.** If `journal/day-NNN.md` for the next day number
-   already exists, stop: today's work is done.
+1. **Idempotency check.** `git pull` first. If `journal/day-NNN.md` for the
+   next day number already exists, stop. Also stop if the newest
+   `content/day-NNN.md` has `date` equal to today: one unit per calendar
+   day, no matter how often the routine fires.
 2. Read `state.json`, `METHOD.md`, and the last few journal entries.
 3. **Select today's unit**: the statement at `nextIndex` in
    `data/tractatus.json`. Bundle a tightly-coupled run of statements
