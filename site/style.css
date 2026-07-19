@@ -1,0 +1,108 @@
+/* Silence as design ethic: one thesis, empty page, serif, high contrast,
+   e-ink friendly. No animation is required for anything essential. */
+
+:root {
+  --paper: #faf8f4;
+  --ink: #1a1a1a;
+  --faint: #8a857c;
+  --rule: #d9d4ca;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --paper: #14130f; --ink: #e8e4da; --faint: #7c776e; --rule: #363329; }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1.6;
+  font-size: 1.0625rem;
+}
+main {
+  max-width: 33rem;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 4rem;
+}
+a { color: inherit; }
+
+header nav.top {
+  max-width: 33rem;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 2.5rem;
+  display: flex;
+  gap: 1.5rem;
+}
+nav.top a {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  color: var(--faint);
+}
+nav.top a.active { color: var(--ink); }
+
+/* Today */
+.statement { margin: 3rem 0 2.5rem; }
+.statement .num {
+  font-size: 0.85rem;
+  color: var(--faint);
+  margin-bottom: 0.75rem;
+}
+.statement .en { font-size: 1.35rem; line-height: 1.5; }
+.statement .en p, .statement .de p { margin: 0 0 0.6em; }
+.statement .de {
+  margin-top: 1rem;
+  color: var(--faint);
+  font-style: italic;
+}
+.footnote { font-size: 0.85rem; color: var(--faint); }
+.badge, .de-toggle {
+  font-family: inherit;
+  font-size: 0.75rem;
+  color: var(--faint);
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 0 0.4em;
+  cursor: pointer;
+}
+.prose { margin: 2.5rem 0; }
+.prose p { margin: 0 0 1em; }
+.zen { border-top: 1px solid var(--rule); padding-top: 1.5rem; }
+.zen::before { content: '—'; display: block; color: var(--faint); margin-bottom: 1rem; }
+#method-row { text-align: right; margin: 0; }
+#method-toggle {
+  background: none; border: none; cursor: pointer;
+  color: var(--faint); font-size: 1.2rem; padding: 0.25rem 0.5rem;
+}
+.method { font-size: 0.9rem; color: var(--faint); }
+
+#day-nav {
+  margin-top: 4rem;
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--faint);
+}
+#day-nav a { text-decoration: none; }
+#day-nav .locked { color: var(--faint); font-style: italic; }
+#day-nav a[hidden], #day-nav span[hidden] { display: none; }
+
+/* Tree */
+#tree { font-size: 0.95rem; }
+.tree-row { margin: 0.35rem 0; padding-left: calc(var(--d) * 1.1rem); }
+.tree-row a { text-decoration: none; }
+.tree-row .num { color: var(--faint); font-size: 0.8rem; margin-right: 0.6em; }
+.tree-row.dim { color: var(--faint); opacity: 0.55; }
+.tree-row .txt p { display: inline; margin: 0; }
+.tree-row .txt .footnote, .tree-row .txt pre { display: none; }
+
+.math { font-style: italic; }
+.ovl { text-decoration: overline; }
+.figure { color: var(--faint); font-size: 0.85rem; }
+pre { overflow-x: auto; font-size: 0.85rem; }
+.colophon { font-size: 0.8rem; color: var(--faint); margin-top: 3rem; }

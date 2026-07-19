@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tractatus Daily</title>
+<meta name="description" content="Wittgenstein's Tractatus Logico-Philosophicus, one thesis a day.">
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="theme-color" content="#faf8f4">
+</head>
+<body>
+<header>
+  <nav class="top" aria-label="views">
+    <a href="#today" id="nav-today">today</a>
+    <a href="#tree" id="nav-tree">tree</a>
+    <a href="#about" id="nav-about">about</a>
+  </nav>
+</header>
+<main>
+  <section id="today-view" hidden>
+    <div id="statements"></div>
+    <div id="explanation" class="prose"></div>
+    <div id="zen" class="prose zen" hidden></div>
+    <p id="method-row" hidden><button id="method-toggle" aria-label="method note">°</button></p>
+    <div id="method" class="prose method" hidden></div>
+    <nav id="day-nav" aria-label="days">
+      <a id="prev" href="#">‹</a>
+      <span id="day-label"></span>
+      <a id="next" href="#">›</a>
+      <span id="next-locked" class="locked" hidden></span>
+    </nav>
+  </section>
+  <section id="tree-view" hidden>
+    <div id="tree"></div>
+  </section>
+  <section id="about-view" class="prose" hidden>
+    <p><em>Tractatus Daily</em> walks through Ludwig Wittgenstein's
+    <cite>Tractatus Logico-Philosophicus</cite> one thesis at a time —
+    one small step per real day, in the order and numbering Wittgenstein
+    gave the book. Wherever you begin, you begin at the beginning.</p>
+    <p>The English is C.&nbsp;K. Ogden's 1922 translation; tap
+    <span class="badge">de</span> for Wittgenstein's German. The
+    <span class="badge">°</span> mark opens the day's method note — the
+    author's working self-critique. Some days carry a note on Zen; most,
+    honestly, do not.</p>
+    <p>This site is written day by day and rewrites itself as it goes. Its
+    whole history is public in its git repository.</p>
+    <p id="push-row" hidden>
+      <button id="push-btn"></button>
+      <span id="push-status"></span>
+    </p>
+    <p class="colophon">Text: Project Gutenberg ebook #5740 (public domain).</p>
+  </section>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>

@@ -20,7 +20,7 @@ export function mdToHtml(md) {
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
       .replace(/\*([^*]+)\*/g, '<em>$1</em>')
       .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>')
-      .replace(/\n/g, '<br>');
+      .replace(/\s*\n\s*/g, ' '); // hard-wrapped source lines are one paragraph
     return isQuote ? `<blockquote><p>${t}</p></blockquote>` : `<p>${t}</p>`;
   }).join('\n');
 }

@@ -23,7 +23,7 @@ subject only to the guardrails below.
 6. **Write `journal/day-NNN.md`**: which theses you authored, what you
    changed in the app and why, what your self-assessment concluded.
 7. Update `state.json` (`day`, `nextIndex`, `updated`). Run
-   `node --test tests/` and `node build.mjs`; both must pass. Commit
+   `npm test` and `node build.mjs`; both must pass. Commit
    everything as plain commit(s) to `main` with a message summarizing the
    day; push. Pages deploys automatically.
 

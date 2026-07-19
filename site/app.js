@@ -1,0 +1,151 @@
+import { todayISO, currentDay } from './progress.js';
+
+// Filled in once the push worker is provisioned (see push-worker/README.md).
+const PUSH = { workerUrl: '', publicKey: '' };
+
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(3, '0');
+const state = { manifest: null, unlocked: 0, tree: null };
+
+async function boot() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+  state.manifest = await (await fetch('units.json')).json();
+  let start = localStorage.getItem('td.start');
+  if (!start) {
+    start = todayISO();
+    localStorage.setItem('td.start', start); // first visit: the walk begins today
+  }
+  state.unlocked = currentDay(start, todayISO(), state.manifest.frontier);
+  window.addEventListener('hashchange', route);
+  route();
+}
+
+function setActive(name) {
+  for (const v of ['today', 'tree', 'about']) {
+    $(`${v}-view`).hidden = v !== name;
+    $(`nav-${v}`).classList.toggle('active', v === name);
+  }
+}
+
+function route() {
+  const h = location.hash || '#today';
+  if (h === '#tree') { setActive('tree'); renderTree(); return; }
+  if (h === '#about') { setActive('about'); renderAbout(); return; }
+  const m = h.match(/^#day\/(\d+)$/);
+  const day = m ? Math.max(1, Math.min(Number(m[1]), state.unlocked)) : state.unlocked;
+  setActive('today');
+  renderDay(day);
+}
+
+async function renderDay(day) {
+  const unit = await (await fetch(`units/day-${pad(day)}.json`)).json();
+  const box = $('statements');
+  box.innerHTML = '';
+  for (const st of unit.statements) {
+    const art = document.createElement('article');
+    art.className = 'statement';
+    art.innerHTML = `<div class="num">${st.num}</div>
+      <div class="en">${st.en}</div>
+      <button class="de-toggle" aria-expanded="false">de</button>
+      <div class="de" lang="de" hidden>${st.de}</div>`;
+    const btn = art.querySelector('.de-toggle');
+    const de = art.querySelector('.de');
+    btn.addEventListener('click', () => {
+      de.hidden = !de.hidden;
+      btn.setAttribute('aria-expanded', String(!de.hidden));
+    });
+    box.appendChild(art);
+  }
+  $('explanation').innerHTML = unit.explanation;
+  $('zen').hidden = !unit.zen;
+  $('zen').innerHTML = unit.zen ?? '';
+  $('method-row').hidden = !unit.method;
+  $('method').hidden = true;
+  $('method').innerHTML = unit.method ?? '';
+  $('method-toggle').onclick = () => { $('method').hidden = !$('method').hidden; };
+
+  $('day-label').textContent = `day ${day}`;
+  const prev = $('prev'), next = $('next'), locked = $('next-locked');
+  prev.hidden = day <= 1;
+  prev.href = `#day/${day - 1}`;
+  if (day < state.unlocked) {
+    next.hidden = false;
+    locked.hidden = true;
+    next.href = `#day/${day + 1}`;
+  } else {
+    next.hidden = true;
+    locked.hidden = false;
+    locked.textContent = day < state.manifest.frontier ? 'tomorrow' : 'not yet written';
+  }
+}
+
+async function renderTree() {
+  if (!state.tree) state.tree = await (await fetch('tree.json')).json();
+  const dayOf = new Map();
+  for (const u of state.manifest.units) {
+    if (u.day > state.unlocked) break;
+    for (const t of u.theses) dayOf.set(t, u.day);
+  }
+  const box = $('tree');
+  box.innerHTML = '';
+  for (const st of state.tree) {
+    const depth = st.num.includes('.') ? st.num.split('.')[1].length : 0;
+    const row = document.createElement('div');
+    row.className = 'tree-row';
+    row.style.setProperty('--d', depth);
+    if (dayOf.has(st.num)) {
+      row.innerHTML = `<a href="#day/${dayOf.get(st.num)}"><span class="num">${st.num}</span><span class="txt">${st.en}</span></a>`;
+    } else {
+      row.className += ' dim';
+      row.innerHTML = `<span class="num">${st.num}</span>·`;
+    }
+    box.appendChild(row);
+  }
+}
+
+// ---- push subscription (only active once PUSH is configured) ----
+
+function urlB64ToUint8Array(s) {
+  const padding = '='.repeat((4 - (s.length % 4)) % 4);
+  const raw = atob((s + padding).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+
+async function renderAbout() {
+  if (!PUSH.workerUrl || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  const row = $('push-row'), btn = $('push-btn'), status = $('push-status');
+  row.hidden = false;
+  const reg = await navigator.serviceWorker.ready;
+  const existing = await reg.pushManager.getSubscription();
+  btn.textContent = existing ? 'stop the daily bell' : 'a daily bell';
+  status.textContent = '';
+  btn.onclick = async () => {
+    try {
+      if (existing) {
+        await fetch(`${PUSH.workerUrl}/unsubscribe`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ endpoint: existing.endpoint }),
+        });
+        await existing.unsubscribe();
+      } else {
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlB64ToUint8Array(PUSH.publicKey),
+        });
+        await fetch(`${PUSH.workerUrl}/subscribe`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ subscription: sub.toJSON(), startDate: localStorage.getItem('td.start') }),
+        });
+      }
+      renderAbout();
+    } catch {
+      status.textContent = 'could not subscribe';
+    }
+  };
+}
+
+boot();
