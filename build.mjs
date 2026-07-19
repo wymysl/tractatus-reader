@@ -57,6 +57,12 @@ export async function build(opts = {}) {
   const statements = JSON.parse(await readFile(path.join(root, 'data/tractatus.json'), 'utf8'));
   const byNum = new Map(statements.map(s => [s.num, s]));
 
+  const preface = JSON.parse(await readFile(path.join(root, 'data/preface.json'), 'utf8'));
+  if (typeof preface.de !== 'string' || !preface.de.trim()
+    || typeof preface.en !== 'string' || !preface.en.trim()) {
+    throw new Error('data/preface.json: de and en must both be non-empty strings');
+  }
+
   const files = (await readdir(path.join(root, 'content')))
     .filter(f => /^day-\d{3}\.md$/.test(f)).sort();
   if (files.length === 0) throw new Error('no content files in content/');
@@ -107,6 +113,7 @@ export async function build(opts = {}) {
     }));
   }
   await writeFile(path.join(outDir, 'tree.json'), JSON.stringify(statements));
+  await writeFile(path.join(outDir, 'preface.json'), JSON.stringify(preface));
 
   const swPath = path.join(outDir, 'sw.js');
   try { await access(swPath); } catch { return manifest; }

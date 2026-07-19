@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile, readFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { build, mdToHtml, parseContent } from '../build.mjs';
@@ -33,6 +33,8 @@ async function fixture(units) {
     { num: '1', de: '<p>D1</p>', en: '<p>E1</p>' },
     { num: '1.1', de: '<p>D11</p>', en: '<p>E11</p>' },
   ]));
+  await writeFile(path.join(root, 'data/preface.json'),
+    JSON.stringify({ de: '<p>V</p>', en: '<p>P</p>' }));
   await writeFile(path.join(root, 'site/index.html'), '<html>');
   await writeFile(path.join(root, 'site/sw.js'), 'const V = "__BUILD__";');
   for (const [name, raw] of Object.entries(units)) {
@@ -80,4 +82,25 @@ test('build: state.json day mismatch fails loudly', async () => {
   const root = await fixture({ 'day-001.md': day1 });
   await writeFile(path.join(root, 'state.json'), JSON.stringify({ day: 5, nextIndex: 0 }));
   await assert.rejects(() => build({ root }), /state\.json/);
+});
+
+test('build: emits preface.json', async () => {
+  const root = await fixture({ 'day-001.md': day1 });
+  await build({ root });
+  const p = JSON.parse(await readFile(path.join(root, 'dist/preface.json'), 'utf8'));
+  assert.equal(p.en, '<p>P</p>');
+  assert.equal(p.de, '<p>V</p>');
+});
+
+test('build: missing preface fails loudly', async () => {
+  const root = await fixture({ 'day-001.md': day1 });
+  await rm(path.join(root, 'data/preface.json'));
+  await assert.rejects(() => build({ root }), /preface/);
+});
+
+test('build: empty preface language fails loudly', async () => {
+  const root = await fixture({ 'day-001.md': day1 });
+  await writeFile(path.join(root, 'data/preface.json'),
+    JSON.stringify({ de: '', en: '<p>P</p>' }));
+  await assert.rejects(() => build({ root }), /non-empty/);
 });
