@@ -10,6 +10,11 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="theme-color" content="#faf8f4">
+<script>
+// Before first paint: apply a stored light/dark override ('auto' = follow system).
+const t = localStorage.getItem('td.theme');
+if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+</script>
 </head>
 <body>
 <header>
@@ -17,6 +22,7 @@
     <a href="#today" id="nav-today">today</a>
     <a href="#tree" id="nav-tree">tree</a>
     <a href="#about" id="nav-about">about</a>
+    <button id="theme-toggle" aria-label="colour scheme"></button>
   </nav>
 </header>
 <main>

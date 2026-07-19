@@ -10,6 +10,9 @@
 @media (prefers-color-scheme: dark) {
   :root { --paper: #14130f; --ink: #e8e4da; --faint: #7c776e; --rule: #363329; }
 }
+/* Explicit choice from the theme toggle overrides the system setting. */
+:root[data-theme="light"] { --paper: #faf8f4; --ink: #1a1a1a; --faint: #8a857c; --rule: #d9d4ca; }
+:root[data-theme="dark"] { --paper: #14130f; --ink: #e8e4da; --faint: #7c776e; --rule: #363329; }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -42,6 +45,17 @@ nav.top a {
   color: var(--faint);
 }
 nav.top a.active { color: var(--ink); }
+#theme-toggle {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--faint);
+  padding: 0;
+}
 
 /* Today */
 .statement { margin: 3rem 0 2.5rem; }

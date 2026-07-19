@@ -6,6 +6,12 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "-d", "dist", "8317"],
       "port": 8317
+    },
+    {
+      "name": "dist-alt",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "-d", "dist", "8319"],
+      "port": 8319
     }
   ]
 }

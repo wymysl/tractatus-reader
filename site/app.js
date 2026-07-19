@@ -9,7 +9,37 @@ const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(3, '0');
 const state = { manifest: null, unlocked: 0, tree: null };
 
+// ---- theme: auto (system) → light → dark; the head script applied any
+// stored override before first paint, this wires the toggle and keeps the
+// browser-chrome colour in sync ----
+
+const THEMES = ['auto', 'light', 'dark'];
+const darkQuery = matchMedia('(prefers-color-scheme: dark)');
+
+function applyTheme(theme) {
+  if (theme === 'auto') delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = theme;
+  const dark = theme === 'dark' || (theme === 'auto' && darkQuery.matches);
+  document.querySelector('meta[name="theme-color"]').content = dark ? '#14130f' : '#faf8f4';
+  $('theme-toggle').textContent = theme;
+}
+
+function initTheme() {
+  applyTheme(localStorage.getItem('td.theme') ?? 'auto');
+  $('theme-toggle').addEventListener('click', () => {
+    const current = localStorage.getItem('td.theme') ?? 'auto';
+    const next = THEMES[(THEMES.indexOf(current) + 1) % THEMES.length];
+    if (next === 'auto') localStorage.removeItem('td.theme');
+    else localStorage.setItem('td.theme', next);
+    applyTheme(next);
+  });
+  darkQuery.addEventListener('change', () => {
+    if (!localStorage.getItem('td.theme')) applyTheme('auto');
+  });
+}
+
 async function boot() {
+  initTheme();
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
