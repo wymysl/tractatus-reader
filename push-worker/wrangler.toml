@@ -10,5 +10,5 @@ kv_namespaces = [
 crons = ["0 6 * * *"]
 
 [vars]
-SITE_URL = "https://tractatus-daily.pages.dev"
+SITE_URL = "https://tractatus.pages.dev"
 VAPID_SUBJECT = "mailto:kuropatwinsky@gmail.com"

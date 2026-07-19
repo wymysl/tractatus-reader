@@ -18,11 +18,9 @@ a tap away. Authored day by day — and self-revised — by a scheduled agent;
 ## Deployment
 
 - **Repo**: `github.com/wymysl/tractatus-reader` (plain commits to `main`).
-- **Site**: `https://tractatus-daily.pages.dev` — Cloudflare Pages project
-  `tractatus-daily`, **direct upload** (no git integration; it cannot be
-  converted to one). Deploy with:
-
-      node build.mjs && npx wrangler pages deploy dist --project-name tractatus-daily --branch main
+- **Site**: `https://tractatus.pages.dev` — Cloudflare Pages project
+  `tractatus`, git-connected: every push to `main` runs `node build.mjs`
+  and deploys `dist/` automatically.
 
 - **Push worker**: `https://tractatus-push.ekpc.workers.dev` — deployed,
   KV namespace bound, VAPID keys set as Worker secrets (the private key

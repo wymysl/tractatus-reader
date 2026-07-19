@@ -25,9 +25,8 @@ subject only to the guardrails below.
 7. Update `state.json` (`day`, `nextIndex`, `updated`). Run
    `npm test` and `node build.mjs`; both must pass. Commit
    everything as plain commit(s) to `main` with a message summarizing the
-   day; push to `github.com/wymysl/tractatus-reader`. Then deploy:
-   `npx wrangler pages deploy dist --project-name tractatus-daily --branch main`
-   (the Pages project is direct-upload; nothing deploys on push alone).
+   day; push to `github.com/wymysl/tractatus-reader`. Cloudflare Pages
+   (project `tractatus`) builds and deploys automatically on push.
 
 Missed days don't pile up: each run advances exactly one unit. It is a
 practice, not a feed.
