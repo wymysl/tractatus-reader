@@ -15,17 +15,23 @@ a tap away. Authored day by day — and self-revised — by a scheduled agent;
     node build.mjs         # data + content + site → dist/
     python3 -m http.server -d dist 8317
 
-## One-time setup (Piotr)
+## Deployment
 
-1. **GitHub**: create the repo and push `main`
-   (`gh repo create tractatus-daily --public --source . --push`).
-2. **Cloudflare Pages**: connect the repo; build command `node build.mjs`,
-   output directory `dist`.
-3. **Push worker**: see `push-worker/README.md` (KV namespace, VAPID keys,
+- **Repo**: `github.com/wymysl/tractatus-reader` (plain commits to `main`).
+- **Site**: `https://tractatus-daily.pages.dev` — Cloudflare Pages project
+  `tractatus-daily`, **direct upload** (no git integration; it cannot be
+  converted to one). Deploy with:
+
+      node build.mjs && npx wrangler pages deploy dist --project-name tractatus-daily --branch main
+
+## Remaining one-time setup (Piotr)
+
+1. **Push worker**: see `push-worker/README.md` (KV namespace, VAPID keys,
    deploy, then fill `PUSH` in `site/app.js`).
-4. **Daily routine**: schedule a Claude Code cloud routine against the repo
-   that follows `ROUTINE.md` each morning.
-5. Hand checks before announcing: e-ink pass on the Boox; one real push
+2. **Daily routine**: schedule a Claude Code cloud routine against the repo
+   that follows `ROUTINE.md` each morning. It needs a Cloudflare API token
+   (Pages write) as `CLOUDFLARE_API_TOKEN` so it can run the deploy step.
+3. Hand checks before announcing: e-ink pass on the Boox; one real push
    subscription end-to-end.
 
 ## Provenance
