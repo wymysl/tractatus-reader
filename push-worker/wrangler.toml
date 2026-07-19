@@ -3,7 +3,7 @@ main = "src/index.mjs"
 compatibility_date = "2026-07-01"
 
 kv_namespaces = [
-  { binding = "SUBS", id = "REPLACE_AFTER_wrangler_kv_namespace_create_SUBS" }
+  { binding = "SUBS", id = "0ebfc2cca93643239e83988cea7f8ec0" }
 ]
 
 [triggers]

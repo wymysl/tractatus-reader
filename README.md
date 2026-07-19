@@ -24,15 +24,18 @@ a tap away. Authored day by day — and self-revised — by a scheduled agent;
 
       node build.mjs && npx wrangler pages deploy dist --project-name tractatus-daily --branch main
 
+- **Push worker**: `https://tractatus-push.ekpc.workers.dev` — deployed,
+  KV namespace bound, VAPID keys set as Worker secrets (the private key
+  exists *only* there), cron `0 6 * * *` UTC. `PUSH` in `site/app.js` is
+  wired to it.
+
 ## Remaining one-time setup (Piotr)
 
-1. **Push worker**: see `push-worker/README.md` (KV namespace, VAPID keys,
-   deploy, then fill `PUSH` in `site/app.js`).
-2. **Daily routine**: schedule a Claude Code cloud routine against the repo
+1. **Daily routine**: schedule a Claude Code cloud routine against the repo
    that follows `ROUTINE.md` each morning. It needs a Cloudflare API token
    (Pages write) as `CLOUDFLARE_API_TOKEN` so it can run the deploy step.
-3. Hand checks before announcing: e-ink pass on the Boox; one real push
-   subscription end-to-end.
+2. Hand checks before announcing: e-ink pass on the Boox; one real push
+   subscription end-to-end (the "a daily bell" button on the About page).
 
 ## Provenance
 

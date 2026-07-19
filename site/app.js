@@ -1,7 +1,9 @@
 import { todayISO, currentDay } from './progress.js';
 
-// Filled in once the push worker is provisioned (see push-worker/README.md).
-const PUSH = { workerUrl: '', publicKey: '' };
+const PUSH = {
+  workerUrl: 'https://tractatus-push.ekpc.workers.dev',
+  publicKey: 'BOLrek2B0KhSZfwJMIRBNiSy1BuQ9w28OTGp-4gPsEDzZVHbKD5BCRm516jfvwfcVhKCk42rGDEs55jXwz2kgOI',
+};
 
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(3, '0');
