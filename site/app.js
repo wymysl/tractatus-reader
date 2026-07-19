@@ -120,6 +120,8 @@ async function renderPreface() {
   $('preface-en').innerHTML = state.preface.en;
   $('preface-de').innerHTML = state.preface.de;
   const btn = $('preface-de-toggle'), de = $('preface-de');
+  de.hidden = true;
+  btn.setAttribute('aria-expanded', 'false');
   btn.onclick = () => {
     de.hidden = !de.hidden;
     btn.setAttribute('aria-expanded', String(!de.hidden));

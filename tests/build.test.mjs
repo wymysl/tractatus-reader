@@ -104,3 +104,9 @@ test('build: empty preface language fails loudly', async () => {
     JSON.stringify({ de: '', en: '<p>P</p>' }));
   await assert.rejects(() => build({ root }), /non-empty/);
 });
+
+test('build: unparsable preface fails loudly', async () => {
+  const root = await fixture({ 'day-001.md': day1 });
+  await writeFile(path.join(root, 'data/preface.json'), 'not json {');
+  await assert.rejects(() => build({ root }));
+});
