@@ -19,6 +19,7 @@ if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
 <body>
 <header>
   <nav class="top" aria-label="views">
+    <a href="#preface" id="nav-preface">preface</a>
     <a href="#today" id="nav-today">today</a>
     <a href="#tree" id="nav-tree">tree</a>
     <a href="#about" id="nav-about">about</a>
@@ -26,6 +27,15 @@ if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
   </nav>
 </header>
 <main>
+  <section id="preface-view" hidden>
+    <div class="statement">
+      <div class="num">Preface</div>
+      <div id="preface-en" class="preface-text"></div>
+      <button class="de-toggle" id="preface-de-toggle" aria-expanded="false">de</button>
+      <div id="preface-de" class="de" lang="de" hidden></div>
+    </div>
+    <p id="begin-row"><a id="begin-link" href="#today"></a></p>
+  </section>
   <section id="today-view" hidden>
     <div id="statements"></div>
     <div id="explanation" class="prose"></div>

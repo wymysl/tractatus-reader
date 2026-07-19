@@ -3,7 +3,7 @@
 // so every deploy refreshes the shell.
 const VERSION = '__BUILD__';
 const CACHE = `td-${VERSION}`;
-const SHELL = ['./', 'index.html', 'style.css', 'app.js', 'progress.js',
+const SHELL = ['./', 'index.html', 'style.css', 'app.js', 'progress.js', 'preface.json',
   'manifest.webmanifest', 'favicon.svg', 'icon-192.png', 'icon-512.png', 'icon-180.png'];
 
 self.addEventListener('install', e => {

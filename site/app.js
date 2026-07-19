@@ -7,7 +7,7 @@ const PUSH = {
 
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(3, '0');
-const state = { manifest: null, unlocked: 0, tree: null };
+const state = { manifest: null, unlocked: 0, tree: null, preface: null, firstVisit: false };
 
 // ---- theme: auto (system) → light → dark; the head script applied any
 // stored override before first paint, this wires the toggle and keeps the
@@ -47,7 +47,8 @@ async function boot() {
   let start = localStorage.getItem('td.start');
   if (!start) {
     start = todayISO();
-    localStorage.setItem('td.start', start); // first visit: the walk begins today
+    localStorage.setItem('td.start', start); // first visit: the walk begins today…
+    state.firstVisit = true;                 // …and it begins at the doorstep
   }
   state.unlocked = currentDay(start, todayISO(), state.manifest.frontier);
   window.addEventListener('hashchange', route);
@@ -55,14 +56,15 @@ async function boot() {
 }
 
 function setActive(name) {
-  for (const v of ['today', 'tree', 'about']) {
+  for (const v of ['preface', 'today', 'tree', 'about']) {
     $(`${v}-view`).hidden = v !== name;
     $(`nav-${v}`).classList.toggle('active', v === name);
   }
 }
 
 function route() {
-  const h = location.hash || '#today';
+  const h = location.hash || (state.firstVisit ? '#preface' : '#today');
+  if (h === '#preface') { setActive('preface'); renderPreface(); return; }
   if (h === '#tree') { setActive('tree'); renderTree(); return; }
   if (h === '#about') { setActive('about'); renderAbout(); return; }
   const m = h.match(/^#day\/(\d+)$/);
@@ -111,6 +113,19 @@ async function renderDay(day) {
     locked.hidden = false;
     locked.textContent = day < state.manifest.frontier ? 'tomorrow' : 'not yet written';
   }
+}
+
+async function renderPreface() {
+  if (!state.preface) state.preface = await (await fetch('preface.json')).json();
+  $('preface-en').innerHTML = state.preface.en;
+  $('preface-de').innerHTML = state.preface.de;
+  const btn = $('preface-de-toggle'), de = $('preface-de');
+  btn.onclick = () => {
+    de.hidden = !de.hidden;
+    btn.setAttribute('aria-expanded', String(!de.hidden));
+  };
+  $('begin-link').textContent =
+    state.unlocked <= 1 ? 'begin — day 1' : `continue — day ${state.unlocked}`;
 }
 
 async function renderTree() {
