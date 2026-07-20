@@ -141,6 +141,14 @@ async function renderDay(day) {
     locked.hidden = false;
     locked.textContent = 'not yet written';
   }
+
+  // Anywhere but your own day, the walk can be re-rooted: this day becomes today.
+  const startRow = $('start-here-row');
+  startRow.hidden = day === state.unlocked;
+  $('start-here').onclick = () => {
+    setStart(startForDay(day, todayISO()));
+    renderDay(day);
+  };
 }
 
 async function renderPreface() {

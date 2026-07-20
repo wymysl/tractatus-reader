@@ -53,6 +53,14 @@ Three gaps in the per-visitor pacing model:
 - Tree: all authored days link; entries beyond the visitor's day get an
   `ahead` class (dimmed but live). Unwritten theses stay inert dots.
 
+### Start here (day view)
+
+- On any day other than the visitor's own, a quiet `start here` button
+  appears under the day nav: it calls `setStart(startForDay(day, today))`,
+  making the viewed day today — forward to catch up, backward to linger.
+  The About-page catch-up button is the same operation pinned to the
+  frontier.
+
 ### Catching up / walking in step (About page, "your walk")
 
 - Status line: start date, own day, frontier.
