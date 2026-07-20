@@ -16,3 +16,14 @@ export function daysBetween(aISO, bISO) {
 export function currentDay(startISO, today, frontier) {
   return Math.max(1, Math.min(daysBetween(startISO, today) + 1, frontier));
 }
+
+export function addDaysISO(iso, n) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const t = new Date(Date.UTC(y, m - 1, d + n));
+  return `${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, '0')}-${String(t.getUTCDate()).padStart(2, '0')}`;
+}
+
+// The start date that makes today `day` — inverse of currentDay below the frontier.
+export function startForDay(day, today) {
+  return addDaysISO(today, -(day - 1));
+}

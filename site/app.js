@@ -1,4 +1,4 @@
-import { todayISO, currentDay } from './progress.js';
+import { todayISO, currentDay, startForDay } from './progress.js';
 
 const PUSH = {
   workerUrl: 'https://tractatus-push.ekpc.workers.dev',
@@ -62,13 +62,32 @@ function setActive(name) {
   }
 }
 
+// Change the start date (and so the visitor's day). If a push subscription
+// exists, move its startDate too — the worker upserts by endpoint.
+function setStart(iso) {
+  localStorage.setItem('td.start', iso);
+  state.unlocked = currentDay(iso, todayISO(), state.manifest.frontier);
+  if (PUSH.workerUrl && 'serviceWorker' in navigator && 'PushManager' in window) {
+    navigator.serviceWorker.ready
+      .then(reg => reg.pushManager.getSubscription())
+      .then(sub => sub && fetch(`${PUSH.workerUrl}/subscribe`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ subscription: sub.toJSON(), startDate: iso }),
+      }))
+      .catch(() => {});
+  }
+}
+
 function route() {
   const h = location.hash || (state.firstVisit ? '#preface' : '#today');
+  const s = h.match(/^#start\/(\d{4}-\d{2}-\d{2})$/);
+  if (s) { setStart(s[1]); location.replace('#today'); return; }
   if (h === '#preface') { setActive('preface'); renderPreface(); return; }
   if (h === '#tree') { setActive('tree'); renderTree(); return; }
   if (h === '#about') { setActive('about'); renderAbout(); return; }
   const m = h.match(/^#day\/(\d+)$/);
-  const day = m ? Math.max(1, Math.min(Number(m[1]), state.unlocked)) : state.unlocked;
+  const day = m ? Math.max(1, Math.min(Number(m[1]), state.manifest.frontier)) : state.unlocked;
   setActive('today');
   renderDay(day);
 }
@@ -100,18 +119,27 @@ async function renderDay(day) {
   $('method').innerHTML = unit.method ?? '';
   $('method-toggle').onclick = () => { $('method').hidden = !$('method').hidden; };
 
-  $('day-label').textContent = `day ${day}`;
-  const prev = $('prev'), next = $('next'), locked = $('next-locked');
+  $('day-label').textContent = day > state.unlocked ? `day ${day} · ahead` : `day ${day}`;
+  const prev = $('prev'), next = $('next'), locked = $('next-locked'), ahead = $('read-ahead');
+  const frontier = state.manifest.frontier;
   prev.hidden = day <= 1;
   prev.href = `#day/${day - 1}`;
-  if (day < state.unlocked) {
+  next.hidden = true;
+  locked.hidden = true;
+  ahead.hidden = true;
+  if (day !== state.unlocked && day < frontier) {
+    // behind your day, or already reading ahead: walk freely
     next.hidden = false;
-    locked.hidden = true;
     next.href = `#day/${day + 1}`;
-  } else {
-    next.hidden = true;
+  } else if (day === state.unlocked && day < frontier) {
+    // the edge of your walk; tomorrow by default, further only on request
     locked.hidden = false;
-    locked.textContent = day < state.manifest.frontier ? 'tomorrow' : 'not yet written';
+    locked.textContent = 'tomorrow';
+    ahead.hidden = false;
+    ahead.href = `#day/${day + 1}`;
+  } else {
+    locked.hidden = false;
+    locked.textContent = 'not yet written';
   }
 }
 
@@ -134,7 +162,6 @@ async function renderTree() {
   if (!state.tree) state.tree = await (await fetch('tree.json')).json();
   const dayOf = new Map();
   for (const u of state.manifest.units) {
-    if (u.day > state.unlocked) break;
     for (const t of u.theses) dayOf.set(t, u.day);
   }
   const box = $('tree');
@@ -145,7 +172,9 @@ async function renderTree() {
     row.className = 'tree-row';
     row.style.setProperty('--d', depth);
     if (dayOf.has(st.num)) {
-      row.innerHTML = `<a href="#day/${dayOf.get(st.num)}"><span class="num">${st.num}</span><span class="txt">${st.en}</span></a>`;
+      const d = dayOf.get(st.num);
+      if (d > state.unlocked) row.className += ' ahead';
+      row.innerHTML = `<a href="#day/${d}"><span class="num">${st.num}</span><span class="txt">${st.en}</span></a>`;
     } else {
       row.className += ' dim';
       row.innerHTML = `<span class="num">${st.num}</span>·`;
@@ -162,7 +191,37 @@ function urlB64ToUint8Array(s) {
   return Uint8Array.from(raw, c => c.charCodeAt(0));
 }
 
+function renderWalk() {
+  const start = localStorage.getItem('td.start');
+  if (!start) return;
+  const frontier = state.manifest.frontier;
+  const [y, m, d] = start.split('-').map(Number);
+  const started = new Date(y, m - 1, d)
+    .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  $('walk-status').textContent = state.unlocked >= frontier
+    ? `You began on ${started}; you are on day ${state.unlocked}, the latest written.`
+    : `You began on ${started}; you are on day ${state.unlocked} of ${frontier} written.`;
+  const syncRow = $('sync-row');
+  syncRow.hidden = state.unlocked >= frontier;
+  $('sync-btn').textContent = `catch up — make today day ${frontier}`;
+  $('sync-btn').onclick = () => {
+    setStart(startForDay(frontier, todayISO()));
+    renderWalk();
+  };
+  const link = $('thread-link');
+  link.href = `#start/${start}`;
+  link.textContent = `${location.origin}${location.pathname}#start/${start}`;
+  $('thread-copy').onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(link.textContent);
+      $('thread-copy').textContent = 'copied';
+      setTimeout(() => { $('thread-copy').textContent = 'copy'; }, 1500);
+    } catch { /* clipboard unavailable: the link is still selectable */ }
+  };
+}
+
 async function renderAbout() {
+  renderWalk();
   if (!PUSH.workerUrl || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
   const row = $('push-row'), btn = $('push-btn'), status = $('push-status');
   row.hidden = false;

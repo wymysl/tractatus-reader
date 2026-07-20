@@ -47,6 +47,7 @@ if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
       <span id="day-label"></span>
       <a id="next" href="#">›</a>
       <span id="next-locked" class="locked" hidden></span>
+      <a id="read-ahead" hidden href="#">read ahead ›</a>
     </nav>
   </section>
   <section id="tree-view" hidden>
@@ -65,6 +66,15 @@ if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
     <p>This site is written day by day and rewrites itself as it goes. Its
     whole history is public in its
     <a href="https://github.com/wymysl/tractatus-reader" target="_blank" rel="noopener">git repository</a>.</p>
+    <div id="walk">
+      <p id="walk-status"></p>
+      <p id="sync-row" hidden><button id="sync-btn" class="badge"></button>
+      <span class="walk-note">— and from then on, each new day the morning it is written.</span></p>
+      <p class="walk-note">Your place on the walk lives only in this browser.
+      Keep this link to continue on another device, or after a cleared
+      browser:<br><a id="thread-link" href="#"></a>
+      <button id="thread-copy" class="badge">copy</button></p>
+    </div>
     <p id="push-row" hidden>
       <button id="push-btn"></button>
       <span id="push-status"></span>
