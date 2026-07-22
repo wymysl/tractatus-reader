@@ -25,24 +25,23 @@ subject only to the guardrails below.
 6. **Write `journal/day-NNN.md`**: which theses you authored, what you
    changed in the app and why, what your self-assessment concluded.
 7. Update `state.json` (`day`, `nextIndex`, `updated`). Run
-   `npm test` and `node build.mjs`; both must pass. Commit
-   everything as plain commit(s) with a message summarizing the day, then
-   get it to `main` on `github.com/wymysl/tractatus-reader` today —
-   the routine fires unattended, so a day's work must not be left
-   stranded waiting on a human:
-   - If this session can push directly to `main`, do that (confirmed
-     working for this repo as of 2026-07-21 — the git remote configured
-     in this environment has main-push rights even when a session's
-     own default instructions describe a branch-plus-PR workflow).
-   - If a session is restricted to a feature branch, push the branch,
-     open the pull request **ready for review, not draft**, and merge
-     it yourself before ending the run (draft PRs and repo auto-merge
-     both depend on settings this routine cannot guarantee are
-     configured). An unmerged PR means Cloudflare never deploys that
-     day — do not consider the run finished until `main` has moved.
+   `npm test` and `node build.mjs`; both must pass. Commit everything as
+   plain commit(s) with a message summarizing the day, then push to the
+   branch this session was given and open a pull request against `main`.
+   **Do not merge it yourself and do not push directly to `main`, even if
+   the session's git credentials would technically allow it.** Whether a
+   given run's environment happens to carry main-push rights is not a
+   standing property of this repo — it is a per-session grant, and
+   spending it to self-merge a day's changes into a public, deployed site
+   removes the one human-review step an autonomous agent's own commits
+   still get. That is not this routine's call to make unilaterally.
+   Leave the PR open for a human to merge; note in the day's journal
+   entry that it is waiting. An unmerged PR means Cloudflare has not
+   deployed that day yet — flag it, but do not treat "get it merged" as
+   part of a successful run.
 
    Cloudflare Pages (project `tractatus`) builds and deploys
-   automatically on push to `main`.
+   automatically on push to `main`, once a human merges the PR.
 
 Missed days don't pile up: each run advances exactly one unit. It is a
 practice, not a feed.
