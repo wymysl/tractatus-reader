@@ -39,6 +39,14 @@ self.addEventListener('push', e => {
 
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  e.waitUntil(clients.matchAll({ type: 'window' }).then(list =>
-    list.length ? list[0].focus() : clients.openWindow('./')));
+  const target = new URL('./#today', self.registration.scope).href;
+  e.waitUntil(clients.matchAll({ type: 'window' }).then(async list => {
+    for (const c of list) {
+      // Point an already-open (but suspended) window at today, then focus it;
+      // the app's resume refresh advances the frontier once it's visible.
+      await c.navigate(target).catch(() => {});
+      return c.focus();
+    }
+    return clients.openWindow(target);
+  }));
 });

@@ -52,7 +52,29 @@ async function boot() {
   }
   state.unlocked = currentDay(start, todayISO(), state.manifest.frontier);
   window.addEventListener('hashchange', route);
+  // A home-screen PWA is resumed, not reloaded: boot() runs once and its
+  // frontier / day / todayISO() then freeze. So each time the app returns to
+  // the foreground — tapping the daily notification, or reopening from the app
+  // switcher — re-check them, or the newest thesis never appears. See refresh().
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') refresh();
+  });
+  window.addEventListener('pageshow', e => { if (e.persisted) refresh(); });
   route();
+}
+
+// Re-fetch the manifest and recompute the visitor's day against a fresh
+// `today`. Only re-render when something actually moved, so a plain resume
+// mid-reading doesn't disturb the current view.
+async function refresh() {
+  const prevFrontier = state.manifest?.frontier;
+  const prevUnlocked = state.unlocked;
+  try {
+    state.manifest = await (await fetch('units.json')).json();
+  } catch { return; } // offline: keep what we already have
+  const start = localStorage.getItem('td.start');
+  if (start) state.unlocked = currentDay(start, todayISO(), state.manifest.frontier);
+  if (state.manifest.frontier !== prevFrontier || state.unlocked !== prevUnlocked) route();
 }
 
 function setActive(name) {
