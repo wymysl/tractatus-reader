@@ -196,10 +196,15 @@ async function renderTree() {
   }
   const box = $('tree');
   box.innerHTML = '';
+  let firstTopLevel = true;
   for (const st of state.tree) {
     const depth = st.num.includes('.') ? st.num.split('.')[1].length : 0;
     const row = document.createElement('div');
     row.className = 'tree-row';
+    if (depth === 0) {
+      if (!firstTopLevel) row.className += ' chapter';
+      firstTopLevel = false;
+    }
     row.style.setProperty('--d', depth);
     if (dayOf.has(st.num)) {
       const d = dayOf.get(st.num);

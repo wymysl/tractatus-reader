@@ -118,6 +118,7 @@ nav.top a.active { color: var(--ink); }
 /* Tree */
 #tree { font-size: 0.95rem; }
 .tree-row { margin: 0.35rem 0; padding-left: calc(var(--d) * 1.1rem); }
+.tree-row.chapter { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--rule); }
 .tree-row a { text-decoration: none; }
 .tree-row .num { color: var(--faint); font-size: 0.8rem; margin-right: 0.6em; }
 .tree-row.dim { color: var(--faint); opacity: 0.55; }
