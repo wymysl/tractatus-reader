@@ -198,6 +198,11 @@ async function renderTree() {
   box.innerHTML = '';
   let firstTopLevel = true;
   for (const st of state.tree) {
+    // Depth = digit count after the decimal, per the book's own footnote
+    // (n.m1, n.m2 are comments on n.m). This is exact almost everywhere, but
+    // Wittgenstein's zero-padding (2.01..2.06 vs. the equally first-level
+    // 2.1..2.9) makes the padded siblings render one level too deep — a
+    // known, unfixed cosmetic wrinkle; see journal/day-009.md.
     const depth = st.num.includes('.') ? st.num.split('.')[1].length : 0;
     const row = document.createElement('div');
     row.className = 'tree-row';
