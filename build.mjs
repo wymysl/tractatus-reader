@@ -8,6 +8,15 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const pad = n => String(n).padStart(3, '0');
 
+// Ogden's 1922 typesetting hard-hyphenated words that fell across a line
+// break; the source text preserves those breaks literally as a backslash
+// before the hyphen (e.g. "atom\-ic"). In our reflowed HTML the word never
+// breaks at that point, so the mark is pure noise — strip it rather than
+// carry a scanned book's line breaks into a browser.
+export function stripLineBreakHyphens(html) {
+  return html.replace(/\\-/g, '');
+}
+
 export function mdToHtml(md) {
   const esc = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const blocks = esc.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
@@ -54,7 +63,12 @@ export function parseContent(name, raw) {
 export async function build(opts = {}) {
   const root = opts.root ?? fileURLToPath(new URL('./', import.meta.url));
   const outDir = opts.outDir ?? path.join(root, 'dist');
-  const statements = JSON.parse(await readFile(path.join(root, 'data/tractatus.json'), 'utf8'));
+  const rawStatements = JSON.parse(await readFile(path.join(root, 'data/tractatus.json'), 'utf8'));
+  const statements = rawStatements.map(s => ({
+    ...s,
+    de: stripLineBreakHyphens(s.de),
+    en: stripLineBreakHyphens(s.en),
+  }));
   const byNum = new Map(statements.map(s => [s.num, s]));
 
   const preface = JSON.parse(await readFile(path.join(root, 'data/preface.json'), 'utf8'));
@@ -62,6 +76,8 @@ export async function build(opts = {}) {
     || typeof preface.en !== 'string' || !preface.en.trim()) {
     throw new Error('data/preface.json: de and en must both be non-empty strings');
   }
+  preface.de = stripLineBreakHyphens(preface.de);
+  preface.en = stripLineBreakHyphens(preface.en);
 
   const files = (await readdir(path.join(root, 'content')))
     .filter(f => /^day-\d{3}\.md$/.test(f)).sort();

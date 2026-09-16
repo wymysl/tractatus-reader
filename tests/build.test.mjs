@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { build, mdToHtml, parseContent } from '../build.mjs';
+import { build, mdToHtml, parseContent, stripLineBreakHyphens } from '../build.mjs';
 
 test('mdToHtml: paragraphs, emphasis, links, blockquote, escaping', () => {
   assert.equal(mdToHtml('Hello *w* **s**'), '<p>Hello <em>w</em> <strong>s</strong></p>');
@@ -11,6 +11,12 @@ test('mdToHtml: paragraphs, emphasis, links, blockquote, escaping', () => {
   assert.ok(mdToHtml('[x](https://e.co)').includes('<a href="https://e.co">x</a>'));
   assert.equal(mdToHtml('> quoted'), '<blockquote><p>quoted</p></blockquote>');
   assert.ok(mdToHtml('a < b & c').includes('a &lt; b &amp; c'));
+});
+
+test('stripLineBreakHyphens: removes scanned line-break marks, keeps real hyphens', () => {
+  assert.equal(stripLineBreakHyphens('non-ex\\-is\\-tence'), 'non-existence');
+  assert.equal(stripLineBreakHyphens('sub\\-ject-pre\\-di\\-cate'), 'subject-predicate');
+  assert.equal(stripLineBreakHyphens('plain text'), 'plain text');
 });
 
 test('parseContent: frontmatter and sections', () => {
@@ -82,6 +88,23 @@ test('build: state.json day mismatch fails loudly', async () => {
   const root = await fixture({ 'day-001.md': day1 });
   await writeFile(path.join(root, 'state.json'), JSON.stringify({ day: 5, nextIndex: 0 }));
   await assert.rejects(() => build({ root }), /state\.json/);
+});
+
+test('build: strips scanned line-break hyphens from statements and preface', async () => {
+  const root = await fixture({ 'day-001.md': day1 });
+  await writeFile(path.join(root, 'data/tractatus.json'), JSON.stringify([
+    { num: '1', de: '<p>D1</p>', en: '<p>non-ex\\-is\\-tence</p>' },
+    { num: '1.1', de: '<p>D11</p>', en: '<p>E11</p>' },
+  ]));
+  await writeFile(path.join(root, 'data/preface.json'),
+    JSON.stringify({ de: '<p>V</p>', en: '<p>pre\\-face</p>' }));
+  await build({ root });
+  const unit = JSON.parse(await readFile(path.join(root, 'dist/units/day-001.json'), 'utf8'));
+  assert.equal(unit.statements[0].en, '<p>non-existence</p>');
+  const tree = JSON.parse(await readFile(path.join(root, 'dist/tree.json'), 'utf8'));
+  assert.equal(tree[0].en, '<p>non-existence</p>');
+  const preface = JSON.parse(await readFile(path.join(root, 'dist/preface.json'), 'utf8'));
+  assert.equal(preface.en, '<p>preface</p>');
 });
 
 test('build: emits preface.json', async () => {
