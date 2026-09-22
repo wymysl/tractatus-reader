@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { build, mdToHtml, parseContent } from '../build.mjs';
+import { build, mdToHtml, parseContent, deTeXHyphens } from '../build.mjs';
 
 test('mdToHtml: paragraphs, emphasis, links, blockquote, escaping', () => {
   assert.equal(mdToHtml('Hello *w* **s**'), '<p>Hello <em>w</em> <strong>s</strong></p>');
@@ -11,6 +11,11 @@ test('mdToHtml: paragraphs, emphasis, links, blockquote, escaping', () => {
   assert.ok(mdToHtml('[x](https://e.co)').includes('<a href="https://e.co">x</a>'));
   assert.equal(mdToHtml('> quoted'), '<blockquote><p>quoted</p></blockquote>');
   assert.ok(mdToHtml('a < b & c').includes('a &lt; b &amp; c'));
+});
+
+test('deTeXHyphens: converts TeX discretionary hyphens to soft hyphens', () => {
+  assert.equal(deTeXHyphens('non-ex\\-is\\-tence'), 'non-ex­is­tence');
+  assert.equal(deTeXHyphens('plain word'), 'plain word');
 });
 
 test('parseContent: frontmatter and sections', () => {
@@ -82,6 +87,19 @@ test('build: state.json day mismatch fails loudly', async () => {
   const root = await fixture({ 'day-001.md': day1 });
   await writeFile(path.join(root, 'state.json'), JSON.stringify({ day: 5, nextIndex: 0 }));
   await assert.rejects(() => build({ root }), /state\.json/);
+});
+
+test('build: strips TeX discretionary hyphens from statement text', async () => {
+  const root = await fixture({ 'day-001.md': day1 });
+  await writeFile(path.join(root, 'data/tractatus.json'), JSON.stringify([
+    { num: '1', de: '<p>D1</p>', en: '<p>ex\\-is\\-tence</p>' },
+    { num: '1.1', de: '<p>D11</p>', en: '<p>E11</p>' },
+  ]));
+  await build({ root });
+  const unit = JSON.parse(await readFile(path.join(root, 'dist/units/day-001.json'), 'utf8'));
+  assert.equal(unit.statements[0].en, '<p>ex­is­tence</p>');
+  const tree = JSON.parse(await readFile(path.join(root, 'dist/tree.json'), 'utf8'));
+  assert.equal(tree[0].en, '<p>ex­is­tence</p>');
 });
 
 test('build: emits preface.json', async () => {

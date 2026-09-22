@@ -8,6 +8,13 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const pad = n => String(n).padStart(3, '0');
 
+// The Ogden/German source text carries literal TeX discretionary-hyphen
+// commands ("\-") at hyphenation points inside long words (e.g.
+// "non-ex\-is\-tence"). Left as-is they render as a stray backslash in
+// HTML. A soft hyphen (U+00AD) is the exact HTML equivalent: invisible
+// unless the browser actually breaks the line there.
+export const deTeXHyphens = s => s.replace(/\\-/g, '­');
+
 export function mdToHtml(md) {
   const esc = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const blocks = esc.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
@@ -54,7 +61,8 @@ export function parseContent(name, raw) {
 export async function build(opts = {}) {
   const root = opts.root ?? fileURLToPath(new URL('./', import.meta.url));
   const outDir = opts.outDir ?? path.join(root, 'dist');
-  const statements = JSON.parse(await readFile(path.join(root, 'data/tractatus.json'), 'utf8'));
+  const statements = JSON.parse(await readFile(path.join(root, 'data/tractatus.json'), 'utf8'))
+    .map(s => ({ ...s, en: deTeXHyphens(s.en), de: deTeXHyphens(s.de) }));
   const byNum = new Map(statements.map(s => [s.num, s]));
 
   const preface = JSON.parse(await readFile(path.join(root, 'data/preface.json'), 'utf8'));
