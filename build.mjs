@@ -8,6 +8,21 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const pad = n => String(n).padStart(3, '0');
 
+// data/tractatus.json carries the source text's discretionary hyphens
+// verbatim — TeX's `\-`, a hint for where a word may break if justified
+// typesetting needs it, invisible in properly rendered output. This site
+// does no such typesetting and renders en/de straight into the DOM, so
+// the escape leaks as a literal backslash (e.g. "atom\-ic", "ex\-is\-tence").
+// Stripping it is presentation cleanup on an immutable source, not an edit
+// to it — the underlying file is untouched. See journal/day-051.md.
+export function stripDiscretionaryHyphens(html) {
+  return html.replace(/\\-/g, '');
+}
+
+function cleanStatement(s) {
+  return { ...s, en: stripDiscretionaryHyphens(s.en), de: stripDiscretionaryHyphens(s.de) };
+}
+
 export function mdToHtml(md) {
   const esc = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const blocks = esc.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
@@ -106,13 +121,13 @@ export async function build(opts = {}) {
     await writeFile(path.join(outDir, 'units', `day-${pad(u.day)}.json`), JSON.stringify({
       day: u.day,
       date: u.date,
-      statements: u.theses.map(t => byNum.get(t)),
+      statements: u.theses.map(t => cleanStatement(byNum.get(t))),
       explanation: mdToHtml(u.explanation),
       zen: u.zen ? mdToHtml(u.zen) : null,
       method: u.method ? mdToHtml(u.method) : null,
     }));
   }
-  await writeFile(path.join(outDir, 'tree.json'), JSON.stringify(statements));
+  await writeFile(path.join(outDir, 'tree.json'), JSON.stringify(statements.map(cleanStatement)));
   await writeFile(path.join(outDir, 'preface.json'), JSON.stringify(preface));
 
   const swPath = path.join(outDir, 'sw.js');
