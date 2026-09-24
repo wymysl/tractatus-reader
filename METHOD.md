@@ -20,12 +20,20 @@ method note and journal entry — when a thesis puts pressure on it.
    Conant) genuinely diverge on today's thesis, say so briefly and do not
    pick a winner. Where they don't diverge, stay silent about them.
 
-## Zen notes
+## Elsewhere notes
 
-Only when genuine. Many theses have no honest Zen counterpart; on those days
-the section is omitted entirely — silence, not filler. A genuine disanalogy
-counts as a connection. The test: would the note survive being doubted by
-someone who knows both traditions?
+The `## Elsewhere` section (called `## Zen` until 2026-09-24) sets today's
+thesis beside another tradition. **Always look first for a legitimate Zen
+analogy** — koans, the Chan/Zen masters, Dōgen — one that holds up on the
+thesis's actual claim, not a shared word or mood. Only when no Zen match is
+legitimate, widen to other Buddhist, Asian, or Western thought. Name the tradition in the note's first
+sentence so the reader knows where they are.
+
+Only when genuine. When nothing fits, omit the section — silence, not
+filler. A genuine disanalogy counts as a connection. The test: would the
+note survive being doubted by someone who knows both traditions? Keep it to
+one or two short paragraphs, and keep bookkeeping (which sources were used
+recently, what was rejected) in the Method note or journal, never here.
 
 ## Method notes (°)
 

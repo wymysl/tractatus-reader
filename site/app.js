@@ -135,8 +135,8 @@ async function renderDay(day) {
     box.appendChild(art);
   }
   $('explanation').innerHTML = unit.explanation;
-  $('zen').hidden = !unit.zen;
-  $('zen').innerHTML = unit.zen ?? '';
+  $('elsewhere').hidden = !unit.elsewhere;
+  $('elsewhere').innerHTML = unit.elsewhere ?? '';
   $('method-row').hidden = !unit.method;
   $('method').hidden = true;
   $('method').innerHTML = unit.method ?? '';

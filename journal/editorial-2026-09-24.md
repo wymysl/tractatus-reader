@@ -58,3 +58,18 @@ notes. Test added.
    Cross-references should name the day or thesis, not "N days ago".
 4. **Source-text artefacts**: some theses in `data/tractatus.json` are
    split mid-sentence across `<p>` (e.g. 2.0131) or carry TeX residue.
+
+## Later the same day — owner decisions
+
+- **Zen → Elsewhere.** Piotr chose to rename rather than retreat. The
+  section heading is now `## Elsewhere` in METHOD.md, ROUTINE.md, the
+  build and all 43 content files that had one (heading only; note text
+  untouched). METHOD.md now requires trying for a *legitimate* Zen analogy
+  first and widening only when none holds, naming the tradition up front,
+  and keeping source-rotation bookkeeping out of the note. The About page
+  says the same. The build still accepts a legacy `## Zen` heading.
+- **Human-merge rule lifted.** Piotr authorised automatic merging.
+  `.github/workflows/auto-merge.yml` (drafted 2026-07-22, never pushed
+  until now) merges `claude/**` PRs; ROUTINE.md step 7 makes landing the
+  day part of a successful run, and step 1 now merges a stranded PR
+  instead of re-authoring it.

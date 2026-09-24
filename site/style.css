@@ -84,8 +84,8 @@ nav.top a.active { color: var(--ink); }
 }
 .prose { margin: 2.5rem 0; }
 .prose p { margin: 0 0 1em; }
-.zen { border-top: 1px solid var(--rule); padding-top: 1.5rem; }
-.zen::before { content: '—'; display: block; color: var(--faint); margin-bottom: 1rem; }
+.elsewhere { border-top: 1px solid var(--rule); padding-top: 1.5rem; }
+.elsewhere::before { content: '—'; display: block; color: var(--faint); margin-bottom: 1rem; }
 #method-row { text-align: right; margin: 0; }
 #method-toggle {
   background: none; border: none; cursor: pointer;

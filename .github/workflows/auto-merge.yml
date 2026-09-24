@@ -1,0 +1,44 @@
+name: Auto-merge daily routine PRs
+
+# The daily routine may push straight to `main`. When its cloud session
+# is restricted to a feature branch, it opens a pull request instead — and this
+# workflow merges that PR automatically, so a day's thesis is never left
+# stranded waiting on a human (an unmerged PR means Cloudflare never deploys).
+#
+# Scoped to the routine's own branches (claude/**) from this same repository,
+# so ordinary human pull requests are never auto-merged.
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.head_ref, 'claude/') &&
+      github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Retry: right after "opened", GitHub may still be computing
+          # mergeability and the first attempt can transiently fail.
+          for attempt in 1 2 3 4 5; do
+            if gh pr merge "$PR" --repo "$REPO" --merge; then
+              echo "Merged PR #$PR on attempt $attempt."
+              exit 0
+            fi
+            echo "Attempt $attempt failed; PR not mergeable yet. Waiting 10s…"
+            sleep 10
+          done
+          echo "::error::Could not merge PR #$PR after 5 attempts."
+          exit 1

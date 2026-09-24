@@ -55,7 +55,7 @@ export function parseContent(name, raw) {
     date: meta.date ?? '',
     theses: (meta.theses ?? '').split(',').map(s => s.trim()).filter(Boolean),
     explanation: sec('explanation'),
-    zen: sec('zen'),
+    elsewhere: sec('elsewhere') || sec('zen'), // section was '## Zen' until 2026-09-24
     method: sec('method'),
   };
 }
@@ -118,7 +118,7 @@ export async function build(opts = {}) {
       date: u.date,
       statements: u.theses.map(t => byNum.get(t)),
       explanation: mdToHtml(u.explanation),
-      zen: u.zen ? mdToHtml(u.zen) : null,
+      elsewhere: u.elsewhere ? mdToHtml(u.elsewhere) : null,
       method: u.method ? mdToHtml(u.method) : null,
     }));
   }

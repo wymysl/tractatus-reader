@@ -28,7 +28,8 @@ test('parseContent: frontmatter and sections', () => {
   assert.equal(u.date, '2026-07-20');
   assert.deepEqual(u.theses, ['1.1', '1.11']);
   assert.equal(u.explanation, 'E.');
-  assert.equal(u.zen, '');
+  assert.equal(u.elsewhere, '');
+  assert.equal(parseContent('d.md', '---\nday: 1\n---\n## Zen\nZ.\n').elsewhere, 'Z.'); // legacy heading
   assert.equal(u.method, 'M.');
 });
 
@@ -61,7 +62,7 @@ test('build: happy path produces manifest, unit files, tree, stamped sw', async 
   assert.equal(manifest.frontier, 1);
   const unit = JSON.parse(await readFile(path.join(root, 'dist/units/day-001.json'), 'utf8'));
   assert.equal(unit.statements[0].en, '<p>E1</p>');
-  assert.equal(unit.zen, null);
+  assert.equal(unit.elsewhere, null);
   assert.ok(unit.explanation.includes('<p>Fine.</p>'));
   const tree = JSON.parse(await readFile(path.join(root, 'dist/tree.json'), 'utf8'));
   assert.equal(tree.length, 2);

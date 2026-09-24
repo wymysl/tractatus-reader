@@ -10,18 +10,18 @@ subject only to the guardrails below.
 1. **Idempotency check.** `git pull` first. If `journal/day-NNN.md` for the
    next day number already exists, stop. Also stop if the newest
    `content/day-NNN.md` has `date` equal to today: one unit per calendar
-   day, no matter how often the routine fires. Also stop if an open pull
-   request already adds `journal/day-NNN.md` for that next day (list
-   open PRs with whatever GitHub tool this session has): the day is
-   written and waiting for a
-   human merge — re-authoring it only piles up duplicate PRs.
+   day, no matter how often the routine fires. If an open pull request
+   already adds `journal/day-NNN.md` for that next day (list open PRs
+   with whatever GitHub tool this session has), the day is written but
+   its merge failed: merge that PR (plain merge) and stop — never
+   re-author it, which only piles up duplicate PRs.
 2. Read `state.json`, `METHOD.md`, and the last few journal entries.
 3. **Select today's unit**: the statement at `nextIndex` in
    `data/tractatus.json`. Bundle a tightly-coupled run of statements
    (e.g. the truth-table block 4.411–4.4661) only when splitting it would
    make single days meaningless.
 4. **Write `content/day-NNN.md`** (frontmatter: `day`, `date`,
-   `theses`; sections: `## Explanation` required, `## Zen` only if genuine,
+   `theses`; sections: `## Explanation` required, `## Elsewhere` only if genuine — always try for a legitimate Zen analogy first,
    `## Method`). Follow METHOD.md.
 5. **Self-assess.** Does today's thesis put pressure on METHOD.md or on the
    site's presentation? If yes, revise METHOD.md and/or edit `site/`,
@@ -31,21 +31,18 @@ subject only to the guardrails below.
 7. Update `state.json` (`day`, `nextIndex`, `updated`). Run
    `npm test` and `node build.mjs`; both must pass. Commit everything as
    plain commit(s) with a message summarizing the day, then push to the
-   branch this session was given and open a pull request against `main`.
-   **Do not merge it yourself and do not push directly to `main`, even if
-   the session's git credentials would technically allow it.** Whether a
-   given run's environment happens to carry main-push rights is not a
-   standing property of this repo — it is a per-session grant, and
-   spending it to self-merge a day's changes into a public, deployed site
-   removes the one human-review step an autonomous agent's own commits
-   still get. That is not this routine's call to make unilaterally.
-   Leave the PR open for a human to merge; note in the day's journal
-   entry that it is waiting. An unmerged PR means Cloudflare has not
-   deployed that day yet — flag it, but do not treat "get it merged" as
-   part of a successful run.
+   branch this session was given and open a pull request against `main`,
+   **ready for review, not draft**. Landing it is part of the run: the
+   owner authorised automatic merging on 2026-09-24 (this replaces the
+   earlier human-merge rule). `.github/workflows/auto-merge.yml` merges
+   `claude/**` PRs on its own; confirm `main` has actually moved, and if
+   the workflow hasn't landed the PR after a short wait, merge it
+   yourself (plain merge, never squash or rebase). If the session can
+   push to `main` directly, that is fine too. Do not consider the run
+   finished until `main` contains today's unit.
 
    Cloudflare Pages (project `tractatus`) builds and deploys
-   automatically on push to `main`, once a human merges the PR.
+   automatically on every push to `main`.
 
 Missed days don't pile up: each run advances exactly one unit. It is a
 practice, not a feed.
