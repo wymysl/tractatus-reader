@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { build, mdToHtml, parseContent, stripSoftHyphens } from '../build.mjs';
+import { build, cleanLatexResidue, mdToHtml, parseContent, stripSoftHyphens } from '../build.mjs';
 
 test('mdToHtml: paragraphs, emphasis, links, blockquote, escaping', () => {
   assert.equal(mdToHtml('Hello *w* **s**'), '<p>Hello <em>w</em> <strong>s</strong></p>');
@@ -19,6 +19,18 @@ test('stripSoftHyphens: removes print hyphenation points, joins the word', () =>
   assert.equal(stripSoftHyphens('atom\\-ic facts'), 'atomic facts');
   assert.equal(stripSoftHyphens('non-ex\\-is\\-tence'), 'non-existence');
   assert.equal(stripSoftHyphens('plain text'), 'plain text');
+});
+
+test('cleanLatexResidue: rejoins page-break splits, drops TeX braces, keeps display breaks', async () => {
+  const data = JSON.parse(await readFile(new URL('../data/tractatus.json', import.meta.url), 'utf8'));
+  const get = (num, lang) => cleanLatexResidue(data.find(s => s.num === num)[lang]);
+  const en = get('2.0131', 'en');
+  assert.ok(en.includes('A tone must have <em>a</em> pitch, the object'));
+  assert.equal(en.split('</p>\n<p>').length, 2);
+  assert.ok(get('2.0131', 'de').includes('Der Ton muss <em>eine</em> Höhe'));
+  assert.equal(get('3.001', 'de'), '<p>„Ein Sachverhalt ist denkbar“ heisst: Wir können uns ein Bild von ihm machen.</p>');
+  assert.ok(get('3.11', 'de').startsWith('<p>Wir benützen') && get('3.11', 'de').includes('Sachlage.</p>\n<p>Die'));
+  assert.ok(get('4.442', 'en').includes('</pre><br></p>\n<p>”is a propositional sign.'));
 });
 
 test('parseContent: frontmatter and sections', () => {

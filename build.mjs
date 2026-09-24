@@ -15,6 +15,30 @@ const pad = n => String(n).padStart(3, '0');
 // leaving the word whole: "atom\-ic" -> "atomic".
 export const stripSoftHyphens = s => s.replace(/\\-/g, '');
 
+// The Gutenberg LaTeX also left residue that data/tractatus.json (immutable
+// by charter) still carries, so we clean it here: TeX group braces — empty
+// ("„{}Wort“{}"), wrapping a paragraph ("<p>{ … }</p>") or grouping math
+// ("{∼p}") — the "\[ … \]" display delimiters, and <p> breaks where the old
+// print pages broke mid-sentence ("A tone must have <em>a</em></p>\n<p>pitch").
+// A break is mid-sentence when the text before it stops on a letter, digit or
+// comma, or the text after it starts lowercase. Breaks after a display (a
+// <pre> table, a <br>, a diagram placeholder) are layout and stay.
+const visible = h => h.replace(/<[^>]+>/g, '').trim();
+const continues = (prev, next) => {
+  if (/(<br>|<\/pre>|<span class="figure">[^<]*<\/span>)$/.test(prev)) return false;
+  const a = visible(prev), b = visible(next);
+  return a !== '' && b !== '' && (/[\p{L}\p{N},]$/u.test(a) || /^\p{Ll}/u.test(b));
+};
+export function cleanLatexResidue(s) {
+  const paras = [];
+  const html = s.replace(/<p>\{ /g, '<p>').replace(/[{}]/g, '').replace(/\\\[ | \\\]/g, '');
+  for (const p of html.split('</p>\n<p>')) {
+    if (paras.length && continues(paras.at(-1), p)) paras[paras.length - 1] += ' ' + p;
+    else paras.push(p);
+  }
+  return paras.join('</p>\n<p>');
+}
+
 export function mdToHtml(md) {
   const esc = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const blocks = esc.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
@@ -64,7 +88,11 @@ export async function build(opts = {}) {
   const root = opts.root ?? fileURLToPath(new URL('./', import.meta.url));
   const outDir = opts.outDir ?? path.join(root, 'dist');
   const statements = JSON.parse(await readFile(path.join(root, 'data/tractatus.json'), 'utf8'))
-    .map(s => ({ ...s, de: stripSoftHyphens(s.de), en: stripSoftHyphens(s.en) }));
+    .map(s => ({
+      ...s,
+      de: cleanLatexResidue(stripSoftHyphens(s.de)),
+      en: cleanLatexResidue(stripSoftHyphens(s.en)),
+    }));
   const byNum = new Map(statements.map(s => [s.num, s]));
 
   const preface = JSON.parse(await readFile(path.join(root, 'data/preface.json'), 'utf8'));
