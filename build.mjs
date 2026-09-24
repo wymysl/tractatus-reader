@@ -8,6 +8,13 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const pad = n => String(n).padStart(3, '0');
 
+// The source text marks optional print hyphenation points with a literal
+// "\-" (TeX-style \-), e.g. "atom\-ic" for a line that may break as
+// "atom-/ic" or run on as "atomic". On a screen we never do that
+// line-break-driven hyphenation, so the marker should simply vanish,
+// leaving the word whole: "atom\-ic" -> "atomic".
+export const stripSoftHyphens = s => s.replace(/\\-/g, '');
+
 export function mdToHtml(md) {
   const esc = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const blocks = esc.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
@@ -54,7 +61,8 @@ export function parseContent(name, raw) {
 export async function build(opts = {}) {
   const root = opts.root ?? fileURLToPath(new URL('./', import.meta.url));
   const outDir = opts.outDir ?? path.join(root, 'dist');
-  const statements = JSON.parse(await readFile(path.join(root, 'data/tractatus.json'), 'utf8'));
+  const statements = JSON.parse(await readFile(path.join(root, 'data/tractatus.json'), 'utf8'))
+    .map(s => ({ ...s, de: stripSoftHyphens(s.de), en: stripSoftHyphens(s.en) }));
   const byNum = new Map(statements.map(s => [s.num, s]));
 
   const preface = JSON.parse(await readFile(path.join(root, 'data/preface.json'), 'utf8'));
