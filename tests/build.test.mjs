@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { build, mdToHtml, parseContent } from '../build.mjs';
+import { build, mdToHtml, parseContent, stripSoftHyphens } from '../build.mjs';
 
 test('mdToHtml: paragraphs, emphasis, links, blockquote, escaping', () => {
   assert.equal(mdToHtml('Hello *w* **s**'), '<p>Hello <em>w</em> <strong>s</strong></p>');
@@ -13,6 +13,12 @@ test('mdToHtml: paragraphs, emphasis, links, blockquote, escaping', () => {
   assert.ok(mdToHtml('a < b & c').includes('a &lt; b &amp; c'));
   assert.equal(mdToHtml('see `x.js` now'), '<p>see <code>x.js</code> now</p>');
   assert.equal(mdToHtml('load-\nbearing, a -\nb'), '<p>load-bearing, a - b</p>');
+});
+
+test('stripSoftHyphens: removes print hyphenation points, joins the word', () => {
+  assert.equal(stripSoftHyphens('atom\\-ic facts'), 'atomic facts');
+  assert.equal(stripSoftHyphens('non-ex\\-is\\-tence'), 'non-existence');
+  assert.equal(stripSoftHyphens('plain text'), 'plain text');
 });
 
 test('parseContent: frontmatter and sections', () => {
@@ -62,6 +68,26 @@ test('build: happy path produces manifest, unit files, tree, stamped sw', async 
   const sw = await readFile(path.join(root, 'dist/sw.js'), 'utf8');
   assert.ok(!sw.includes('__BUILD__'));
   assert.ok((await readFile(path.join(root, 'dist/index.html'), 'utf8')).includes('<html>'));
+});
+
+test('build: strips soft hyphens from statement text in units and tree', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'td-'));
+  await mkdir(path.join(root, 'data'));
+  await mkdir(path.join(root, 'content'));
+  await mkdir(path.join(root, 'site'));
+  await writeFile(path.join(root, 'data/tractatus.json'), JSON.stringify([
+    { num: '1', de: '<p>D1</p>', en: '<p>atom\\-ic facts</p>' },
+  ]));
+  await writeFile(path.join(root, 'data/preface.json'),
+    JSON.stringify({ de: '<p>V</p>', en: '<p>P</p>' }));
+  await writeFile(path.join(root, 'site/index.html'), '<html>');
+  await writeFile(path.join(root, 'content/day-001.md'), day1);
+  await writeFile(path.join(root, 'state.json'), JSON.stringify({ day: 1, nextIndex: 0 }));
+  await build({ root });
+  const unit = JSON.parse(await readFile(path.join(root, 'dist/units/day-001.json'), 'utf8'));
+  assert.equal(unit.statements[0].en, '<p>atomic facts</p>');
+  const tree = JSON.parse(await readFile(path.join(root, 'dist/tree.json'), 'utf8'));
+  assert.equal(tree[0].en, '<p>atomic facts</p>');
 });
 
 test('build: unknown thesis fails loudly', async () => {
