@@ -10,7 +10,11 @@ subject only to the guardrails below.
 1. **Idempotency check.** `git pull` first. If `journal/day-NNN.md` for the
    next day number already exists, stop. Also stop if the newest
    `content/day-NNN.md` has `date` equal to today: one unit per calendar
-   day, no matter how often the routine fires.
+   day, no matter how often the routine fires. Also stop if an open pull
+   request already adds `journal/day-NNN.md` for that next day (list
+   open PRs with whatever GitHub tool this session has): the day is
+   written and waiting for a
+   human merge — re-authoring it only piles up duplicate PRs.
 2. Read `state.json`, `METHOD.md`, and the last few journal entries.
 3. **Select today's unit**: the statement at `nextIndex` in
    `data/tractatus.json`. Bundle a tightly-coupled run of statements

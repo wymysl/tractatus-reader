@@ -11,6 +11,8 @@ test('mdToHtml: paragraphs, emphasis, links, blockquote, escaping', () => {
   assert.ok(mdToHtml('[x](https://e.co)').includes('<a href="https://e.co">x</a>'));
   assert.equal(mdToHtml('> quoted'), '<blockquote><p>quoted</p></blockquote>');
   assert.ok(mdToHtml('a < b & c').includes('a &lt; b &amp; c'));
+  assert.equal(mdToHtml('see `x.js` now'), '<p>see <code>x.js</code> now</p>');
+  assert.equal(mdToHtml('load-\nbearing, a -\nb'), '<p>load-bearing, a - b</p>');
 });
 
 test('parseContent: frontmatter and sections', () => {
